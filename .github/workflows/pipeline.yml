@@ -1,28 +1,59 @@
-name: Sample App
+name: Guthub Actions Demo
 
 on:
-    push:
-        branches: [ main ]
-    pull_request:
-        branches: [ main ]
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-        steps:
-        - uses: actions/checkout@v4
+    steps:
+    - uses: actions/checkout@v2
 
-        - name: Set up Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: '18.x'
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18'
 
-        - name: Install frontend dependencies
-          run: |
-            cd frontend
-            npm install
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm install
 
-          
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
 
-    
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        npm install
+
+    - name: Run tests
+      run: |
+        cd frontend && npm test
+        cd ../backend && npm test
+
+    - name: Build Docker images
+      run: docker-compose build
+
+    - name: Export static frontend
+      run: |
+        cd frontend
+        npm run export
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./frontend/out
+
+    - name: Upload artifact for deployment job
+      uses: actions/upload-artifact@v2
+      with:
+        name: frontend-build
+        path: frontend/out
