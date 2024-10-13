@@ -1,4 +1,4 @@
-name: Guthub Actions Demo
+name: Static App Demo
 
 on:
   push:
@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: '18'
 
@@ -23,27 +23,10 @@ jobs:
         cd frontend
         npm install
 
-    - name: Build frontend
+    - name: Build and export frontend
       run: |
         cd frontend
         npm run build
-
-    - name: Install backend dependencies
-      run: |
-        cd backend
-        npm install
-
-    - name: Run tests
-      run: |
-        cd frontend && npm test
-        cd ../backend && npm test
-
-    - name: Build Docker images
-      run: docker-compose build
-
-    - name: Export static frontend
-      run: |
-        cd frontend
         npm run export
 
     - name: Deploy to GitHub Pages
@@ -52,7 +35,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./frontend/out
 
-    - name: Upload artifact for deployment job
+    - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: frontend-build
